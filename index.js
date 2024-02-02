@@ -1,11 +1,13 @@
 
-
 const express = require('express');
 const fs = require('fs');
 const axios = require('axios');
 const FormData = require('form-data');
 const multer = require('multer');
+const cors = require('cors');
 
+// Middleware to enable CORS
+app.use(cors());
 const app = express();
 const port = process.env.PORT || 5000;
 const apiKey = process.env.API_KEY;
