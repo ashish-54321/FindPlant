@@ -6,8 +6,7 @@ const FormData = require('form-data');
 const multer = require('multer');
 const cors = require('cors');
 
-// Middleware to enable CORS
-app.use(cors());
+
 const app = express();
 const port = process.env.PORT || 5000;
 const apiKey = process.env.API_KEY;
@@ -15,6 +14,8 @@ const apiKey = process.env.API_KEY;
 const storage = multer.memoryStorage(); // store files in memory
 const upload = multer({ storage: storage });
 
+// Middleware to enable CORS
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
