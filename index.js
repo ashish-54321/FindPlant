@@ -38,7 +38,7 @@ app.post('/identify', upload.single('image'), async (req, res) => {
         };
 
         const { status, data } = await axios.post(
-            'https://my-api.plantnet.org/v2/identify/all?include-related-images=true&no-reject=false&lang=en&type=kt&api-key=' + apiKey,
+            'https://my-api.plantnet.org/v2/identify/all?include-related-images=true&no-reject=false&lang=en&type=kt&api-key='+apiKey,
             form,
             { headers }
         );
