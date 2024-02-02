@@ -8,7 +8,8 @@ const multer = require('multer');
 
 const app = express();
 const port = process.env.PORT || 5000;
-const apiKey = process.env.API_KEY;
+// const apiKey = process.env.API_KEY;
+const apiKey = "2b10D0mMRCxIGV5rXGZMAHx6u";
 
 const storage = multer.memoryStorage(); // store files in memory
 const upload = multer({ storage: storage });
