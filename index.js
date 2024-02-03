@@ -41,7 +41,7 @@ app.post('/identify', upload.single('image'), async (req, res) => {
         };
 
         const { status, data } = await axios.post(
-            'https://my-api.plantnet.org/v2/identify/all?include-related-images=true&no-reject=false&lang=en&type=kt&api-key='+apiKey,
+            'https://my-api.plantnet.org/v2/identify/all?include-related-images=true&no-reject=false&lang=en&type=kt&api-key=' + apiKey,
             form,
             { headers }
         );
@@ -55,8 +55,26 @@ app.post('/identify', upload.single('image'), async (req, res) => {
 
         res.status(status).json({ results });
     } catch (error) {
-        console.error('error', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        // res.status(500).json({ error: 'Internal Server Error' });
+        if (error.response) {
+            // The request was made, but the server responded with a status code other than 2xx
+            if (error.response.status == 404) {
+                res.send({ Status: 'Not a Plant Image' })
+            }
+            else {
+                res.send({ Status: 'Check Image Formate only Accept [jpg, jpeg and png] only.' })
+            }
+
+        } else if (error.request) {
+            // The request was made, but no response was received
+            res.send({ Status: 'Check Internet Conection' })
+        } else {
+
+            res.send({ Status: 'Something Went Wrong' })
+
+        }
+
+
     }
 });
 
