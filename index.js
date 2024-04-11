@@ -78,6 +78,45 @@ app.post('/identify', upload.single('image'), async (req, res) => {
     }
 });
 
+
+app.post('/diagnosis', upload.single('image'), async (req, res) => {
+    const imageBuffer = req.file.buffer;
+    if (!imageBuffer) {
+        return res.status(400).json({ error: 'Image is required' });
+    }
+    const base64data = imageBuffer.toString('base64');
+    axios({
+        method: "POST",
+        url: "https://detect.roboflow.com/plant-disease-detection-v2-2nclk/1",
+        params: {
+            api_key: "nwRpZHYTLBJLFcwfIVgn"
+        },
+
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        data: base64data
+    })
+        .then(function (response) {
+            console.log(response.data);
+            const results = {
+                name: response.data.predictions[0].class,
+                infect: response.data.predictions[0].confidence,
+                imageUrls: base64data,
+            }
+            res.send(results);
+
+        })
+        .catch(function (error) {
+            console.log(error.message);
+            res.send({ Status: 'Plant Not Infected !' })
+        });
+
+});
+
+
+
+
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
