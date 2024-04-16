@@ -30,7 +30,7 @@ app.post('/identify', upload.single('image'), async (req, res) => {
         return res.status(400).json({ error: 'Image is required' });
     }
 
-    try {
+   try {
         let form = new FormData();
         form.append('organs', 'auto');
         form.append('images', imageBuffer, { filename: 'uploaded_image.jpg' });
@@ -46,15 +46,37 @@ app.post('/identify', upload.single('image'), async (req, res) => {
             { headers }
         );
 
-        const results = data.results.slice(0, 5).map(result => ({
+        const results = data.results.slice(0, 1).map(result => ({
             scientificName: result.species.scientificName,
             score: result.score,
             commonNames: result.species.commonNames,
             imageUrls: result.images.map(image => image.url.s),
         }));
 
-        res.status(status).json({ results });
-    } catch (error) {
+
+        // Find Accses Token By Plant Common Name 
+        const responseToken = await axios.get(`https://plant.id/api/v3/kb/plants/name_search?q=${results[0].commonNames[0]}`, {
+            headers: {
+                'Api-Key': "SV7WSUX2wF4W02LFu3k8DkimKtLy8cCXLrcFVJN4sWAseJwIN0",
+            }
+        });
+
+
+        // Find Plant Details By using Token
+
+        const responseDetails = await axios.get(`https://plant.id/api/v3/kb/plants/:${responseToken.data.entities[0].access_token}?details=common_names,url,description,taxonomy,rank,gbif_id,inaturalist_id,image,synonyms,edible_parts,watering,propagation_methods`, {
+            headers: {
+                'Api-Key': "SV7WSUX2wF4W02LFu3k8DkimKtLy8cCXLrcFVJN4sWAseJwIN0",
+            }
+        });
+        // console.log(responseDetails.data);
+        const plantData = {
+            imgDetails: results,
+            details: responseDetails.data,
+
+        }
+        res.status(status).json({ plantData });
+    }  catch (error) {
         // res.status(500).json({ error: 'Internal Server Error' });
         if (error.response) {
             // The request was made, but the server responded with a status code other than 2xx
