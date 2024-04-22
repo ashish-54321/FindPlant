@@ -30,7 +30,7 @@ app.post('/identify', upload.single('image'), async (req, res) => {
         return res.status(400).json({ error: 'Image is required' });
     }
 
-   try {
+  // try {
         let form = new FormData();
         form.append('organs', 'auto');
         form.append('images', imageBuffer, { filename: 'uploaded_image.jpg' });
@@ -76,7 +76,7 @@ app.post('/identify', upload.single('image'), async (req, res) => {
 
         }
         res.status(status).json({ plantData });
-    }  catch (error) {
+   /* }   catch (error) {
         // res.status(500).json({ error: 'Internal Server Error' });
         if (error.response) {
             // The request was made, but the server responded with a status code other than 2xx
@@ -97,7 +97,7 @@ app.post('/identify', upload.single('image'), async (req, res) => {
         }
 
 
-    }
+    }*/
 });
 
 
