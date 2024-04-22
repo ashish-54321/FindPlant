@@ -53,11 +53,11 @@ app.post('/identify', upload.single('image'), async (req, res) => {
             imageUrls: result.images.map(image => image.url.s),
         }));
 
-       console.log(results);
+      // console.log(results);
        //Changes from mobile 
        let string = results.scientificName;
        let firstWord = string.split(/\s+/)[0];
-       console.log("firstWord  "+firstWord); // Output: "Mangifera"
+       console.log(firstWord); 
 
 
         // Find Accses Token By Plant Common Name 
