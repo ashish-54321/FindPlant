@@ -57,11 +57,11 @@ app.post('/identify', upload.single('image'), async (req, res) => {
        //Changes from mobile 
        let string = results.scientificName;
        let firstWord = string.split(/\s+/)[0];
-       console.log(firstWord); // Output: "Mangifera"
+       console.log("firstWord  "+firstWord); // Output: "Mangifera"
 
 
         // Find Accses Token By Plant Common Name 
-        const responseToken = await axios.get(`https://plant.id/api/v3/kb/plants/name_search?q=${firstWord}`, {
+       /* const responseToken = await axios.get(`https://plant.id/api/v3/kb/plants/name_search?q=${firstWord}`, {
             headers: {
                 'Api-Key': "SV7WSUX2wF4W02LFu3k8DkimKtLy8cCXLrcFVJN4sWAseJwIN0",
             }
@@ -74,7 +74,7 @@ app.post('/identify', upload.single('image'), async (req, res) => {
             headers: {
                 'Api-Key': "SV7WSUX2wF4W02LFu3k8DkimKtLy8cCXLrcFVJN4sWAseJwIN0",
             }
-        });
+        }); */
         // console.log(responseDetails.data);
         const plantData = {
             imgDetails: results,
