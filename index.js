@@ -57,7 +57,7 @@ app.post('/identify', upload.single('image'), async (req, res) => {
        //Changes from mobile 
        let string = results[0].scientificName;
        let firstWord = string.split(/\s+/)[0];
-       console.log(firstWord); 
+       //console.log(firstWord); 
 
 
         // Find Accses Token By Plant Common Name 
