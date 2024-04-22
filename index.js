@@ -50,12 +50,12 @@ app.post('/identify', upload.single('image'), async (req, res) => {
             scientificName: result.species.scientificName,
             score: result.score,
             commonNames: result.species.commonNames,
-            imageUrls: result.images.map(image => image.url.s),
+            //imageUrls: result.images.map(image => image.url.s),
         }));
 
       // console.log(results);
        //Changes from mobile 
-       let string = results.scientificName;
+       let string = results[0].scientificName;
        let firstWord = string.split(/\s+/)[0];
        console.log(firstWord); 
 
