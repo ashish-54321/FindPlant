@@ -10,6 +10,7 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
 const apiKey = process.env.API_KEY;
+const apiKey1 = process.env.API_KEY1;
 
 const storage = multer.memoryStorage(); // store files in memory
 const upload = multer({ storage: storage });
@@ -63,7 +64,7 @@ app.post('/identify', upload.single('image'), async (req, res) => {
         // Find Accses Token By Plant Common Name 
         const responseToken = await axios.get(`https://plant.id/api/v3/kb/plants/name_search?q=${firstWord}`, {
             headers: {
-                'Api-Key': "SV7WSUX2wF4W02LFu3k8DkimKtLy8cCXLrcFVJN4sWAseJwIN0",
+                'Api-Key': apiKey1 ,
             }
         });
 
@@ -72,7 +73,7 @@ app.post('/identify', upload.single('image'), async (req, res) => {
 
         const responseDetails = await axios.get(`https://plant.id/api/v3/kb/plants/:${responseToken.data.entities[0].access_token}?details=common_names,url,description,taxonomy,rank,gbif_id,inaturalist_id,image,synonyms,edible_parts,watering,propagation_methods`, {
             headers: {
-                'Api-Key': "SV7WSUX2wF4W02LFu3k8DkimKtLy8cCXLrcFVJN4sWAseJwIN0",
+                'Api-Key': apiKey1 ,
             }
         });
         // console.log(responseDetails.data);
