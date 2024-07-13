@@ -11,6 +11,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 const apiKey = process.env.API_KEY;
 const apiKey1 = process.env.API_KEY1;
+const apiKey2 = process.env.API_KEY2;
 
 const storage = multer.memoryStorage(); // store files in memory
 const upload = multer({ storage: storage });
@@ -118,7 +119,7 @@ app.post('/diagnosis', upload.single('image'), async (req, res) => {
         method: "POST",
         url: "https://detect.roboflow.com/plant-disease-detection-v2-2nclk/1",
         params: {
-            api_key: "nwRpZHYTLBJLFcwfIVgn"
+            api_key: apiKey2
         },
 
         headers: {
