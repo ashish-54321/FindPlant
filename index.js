@@ -1,5 +1,4 @@
 
-
 const express = require('express');
 const fs = require('fs');
 const axios = require('axios');
@@ -60,33 +59,63 @@ async function detailsFinder(firstWord) {
         }
     });
 
-    // Find Plant Details By using Token
-
-    const responseDetails = await axios.get(`https://plant.id/api/v3/kb/plants/:${responseToken.data.entities[0].access_token}?details=common_names,url,description,taxonomy,rank,gbif_id,inaturalist_id,image,synonyms,edible_parts,watering,propagation_methods`, {
-        headers: {
-            'Api-Key': apiKey1,
+    if (responseToken.data.entities[0] == null) {
+        const Check = {
+            data: "Not Found Maybe Not Plant Name",
+            token: false
         }
-    });
+        return Check;
+    } else {
+
+        // Find Plant Details By using Token
+
+        const responseDetails = await axios.get(`https://plant.id/api/v3/kb/plants/:${responseToken.data.entities[0].access_token}?details=common_names,url,description,taxonomy,rank,gbif_id,inaturalist_id,image,synonyms,edible_parts,watering,propagation_methods`, {
+            headers: {
+                'Api-Key': apiKey1,
+            }
+        });
+
+        const Check = {
+            data: responseDetails.data,
+            token: true
+        }
+
+        return Check;
+    }
 
 
-    return responseDetails.data;
 
 }
 
 app.post('/search', async (req, res) => {
-    console.log('This IS Search API')
 
 
     const plantDetails = await detailsFinder(req.body.name)
 
-    const plantData = {
+    if (plantDetails.token) {
 
-        imgDetails: plantDetails.image.value,
-        details: plantDetails,
+        const plantData = {
+
+            imgDetails: plantDetails.data.image.value,
+            details: plantDetails.data,
+            token: true,
+
+        }
+
+        res.status(200).json({ plantData });
+
+    } else {
+
+        const plantData = {
+            token: false,
+            details: plantDetails.data,
+
+        }
+        res.status(200).json({ plantData });
 
     }
 
-    res.status(200).json({ plantData });
+
 })
 
 
@@ -125,7 +154,7 @@ app.post('/identify', upload.single('image'), async (req, res) => {
         let string = results[0].scientificName;
         let firstWord = string.split(/\s+/)[0];
 
-       const plantDetails = await detailsFinder(firstWord);
+        const plantDetails = await detailsFinder(firstWord);
 
         const plantData = {
 
