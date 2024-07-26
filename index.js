@@ -1,4 +1,5 @@
 
+
 const express = require('express');
 const fs = require('fs');
 const axios = require('axios');
@@ -156,14 +157,30 @@ app.post('/identify', upload.single('image'), async (req, res) => {
 
         const plantDetails = await detailsFinder(firstWord);
 
-        const plantData = {
 
-            imgDetails: results,
-            details: plantDetails,
+        if (plantDetails.token) {
+
+            const plantData = {
+
+                imgDetails: results,
+                details: plantDetails.data,
+                token: true,
+
+            }
+
+            res.status(200).json({ plantData });
+
+        } else {
+
+            const plantData = {
+                token: false,
+                details: plantDetails.data,
+
+            }
+            res.status(200).json({ plantData });
 
         }
 
-        res.status(status).json({ plantData });
 
     } catch (error) {
 
