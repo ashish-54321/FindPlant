@@ -1,4 +1,5 @@
 
+
 const express = require('express');
 const fs = require('fs');
 const axios = require('axios');
@@ -51,6 +52,7 @@ function errorHandeler(error) {
 async function detailsFinder(firstWord) {
 
 
+
     // Find Accses Token By Plant Common Name 
     const responseToken = await axios.get(`https://plant.id/api/v3/kb/plants/name_search?q=${firstWord}`, {
         headers: {
@@ -65,20 +67,25 @@ async function detailsFinder(firstWord) {
             'Api-Key': apiKey1,
         }
     });
-    // console.log(responseDetails.data);
-    const plantData = {
-        imgDetails: results,
-        details: responseDetails.data,
 
-    }
 
-    return plantData;
+    return responseDetails.data;
 
 }
 
 app.post('/search', async (req, res) => {
+    console.log('This IS Search API')
 
-    const plantData = await detailsFinder(req.body.name)
+
+    const plantDetails = await detailsFinder(req.body.name)
+
+    const plantData = {
+
+        imgDetails: plantDetails.image.value,
+        // imgDetails: results,
+        details: plantDetails,
+
+    }
 
     res.status(200).json({ plantData });
 })
@@ -120,6 +127,13 @@ app.post('/identify', upload.single('image'), async (req, res) => {
         let firstWord = string.split(/\s+/)[0];
 
         const plantData = await detailsFinder(firstWord);
+
+        const plantDetails = {
+
+            imgDetails: results,
+            details: plantDetails,
+
+        }
 
         res.status(status).json({ plantData });
 
