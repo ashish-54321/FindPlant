@@ -25,6 +25,64 @@ app.get("/", (req, res) => {
     res.send("Api's Now Live By Ashish Tiwari");
 });
 
+function errorHandeler(error) {
+    // res.status(500).json({ error: 'Internal Server Error' });
+    if (error.response) {
+        // The request was made, but the server responded with a status code other than 2xx
+        if (error.response.status == 404) {
+            res.send({ Status: 'Not a Plant Image' })
+        }
+        else {
+            res.send({ Status: 'Check Image Formate only Accept [jpg, jpeg and png] only.' })
+        }
+
+    } else if (error.request) {
+        // The request was made, but no response was received
+        res.send({ Status: 'Check Internet Conection' })
+    } else {
+
+        res.send({ Status: 'Something Went Wrong' })
+
+    }
+
+}
+
+
+async function detailsFinder(firstWord) {
+
+
+    // Find Accses Token By Plant Common Name 
+    const responseToken = await axios.get(`https://plant.id/api/v3/kb/plants/name_search?q=${firstWord}`, {
+        headers: {
+            'Api-Key': apiKey1,
+        }
+    });
+
+    // Find Plant Details By using Token
+
+    const responseDetails = await axios.get(`https://plant.id/api/v3/kb/plants/:${responseToken.data.entities[0].access_token}?details=common_names,url,description,taxonomy,rank,gbif_id,inaturalist_id,image,synonyms,edible_parts,watering,propagation_methods`, {
+        headers: {
+            'Api-Key': apiKey1,
+        }
+    });
+    // console.log(responseDetails.data);
+    const plantData = {
+        imgDetails: results,
+        details: responseDetails.data,
+
+    }
+    res.status(status).json({ plantData });
+
+}
+
+app.post('/search', async (req, res) => {
+
+    await detailsFinder(req.body.name)
+})
+
+
+
+
 app.post('/identify', upload.single('image'), async (req, res) => {
     const imageBuffer = req.file.buffer;
 
@@ -32,7 +90,7 @@ app.post('/identify', upload.single('image'), async (req, res) => {
         return res.status(400).json({ error: 'Image is required' });
     }
 
-   try {
+    try {
         let form = new FormData();
         form.append('organs', 'auto');
         form.append('images', imageBuffer, { filename: 'uploaded_image.jpg' });
@@ -55,59 +113,20 @@ app.post('/identify', upload.single('image'), async (req, res) => {
             imageUrls: result.images.map(image => image.url.s),
         }));
 
-      // console.log(results);
-       //Changes from mobile 
-       let string = results[0].scientificName;
-       let firstWord = string.split(/\s+/)[0];
-       //console.log(firstWord); 
+        let string = results[0].scientificName;
+        let firstWord = string.split(/\s+/)[0];
 
+        await detailsFinder(firstWord);
 
-        // Find Accses Token By Plant Common Name 
-        const responseToken = await axios.get(`https://plant.id/api/v3/kb/plants/name_search?q=${firstWord}`, {
-            headers: {
-                'Api-Key': apiKey1 ,
-            }
-        });
+    } catch (error) {
 
-
-        // Find Plant Details By using Token
-
-        const responseDetails = await axios.get(`https://plant.id/api/v3/kb/plants/:${responseToken.data.entities[0].access_token}?details=common_names,url,description,taxonomy,rank,gbif_id,inaturalist_id,image,synonyms,edible_parts,watering,propagation_methods`, {
-            headers: {
-                'Api-Key': apiKey1 ,
-            }
-        });
-        // console.log(responseDetails.data);
-        const plantData = {
-            imgDetails: results,
-            details: responseDetails.data,
-
-        }
-        res.status(status).json({ plantData });
-    }   catch (error) {
-        // res.status(500).json({ error: 'Internal Server Error' });
-        if (error.response) {
-            // The request was made, but the server responded with a status code other than 2xx
-            if (error.response.status == 404) {
-                res.send({ Status: 'Not a Plant Image' })
-            }
-            else {
-                res.send({ Status: 'Check Image Formate only Accept [jpg, jpeg and png] only.' })
-            }
-
-        } else if (error.request) {
-            // The request was made, but no response was received
-            res.send({ Status: 'Check Internet Conection' })
-        } else {
-
-            res.send({ Status: 'Something Went Wrong' })
-
-        }
-
-
+        errorHandeler(error);
     }
 });
 
+
+
+// Diagnosis API 
 
 app.post('/diagnosis', upload.single('image'), async (req, res) => {
     const imageBuffer = req.file.buffer;
