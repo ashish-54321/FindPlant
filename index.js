@@ -168,7 +168,7 @@ app.post('/identify', upload.single('image'), async (req, res) => {
 
             }
 
-            res.status(200).json({ plantData });
+            res.status(status).json({ plantData });
 
         } else {
 
@@ -177,7 +177,7 @@ app.post('/identify', upload.single('image'), async (req, res) => {
                 details: plantDetails.data,
 
             }
-            res.status(200).json({ plantData });
+            res.status(status).json({ plantData });
 
         }
 
