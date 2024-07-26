@@ -30,18 +30,18 @@ function errorHandeler(error) {
     if (error.response) {
         // The request was made, but the server responded with a status code other than 2xx
         if (error.response.status == 404) {
-            res.send({ Status: 'Not a Plant Image' })
+            return ({ Status: 'Not a Plant Image' })
         }
         else {
-            res.send({ Status: 'Check Image Formate only Accept [jpg, jpeg and png] only.' })
+            return ({ Status: 'Check Image Formate only Accept [jpg, jpeg and png] only.' })
         }
 
     } else if (error.request) {
         // The request was made, but no response was received
-        res.send({ Status: 'Check Internet Conection' })
+        return ({ Status: 'Check Internet Conection' })
     } else {
 
-        res.send({ Status: 'Something Went Wrong' })
+        return ({ Status: 'Something Went Wrong' })
 
     }
 
@@ -71,13 +71,16 @@ async function detailsFinder(firstWord) {
         details: responseDetails.data,
 
     }
-    res.status(status).json({ plantData });
+
+    return plantData;
 
 }
 
 app.post('/search', async (req, res) => {
 
-    await detailsFinder(req.body.name)
+    const plantData = await detailsFinder(req.body.name)
+
+    res.status(200).json({ plantData });
 })
 
 
@@ -116,11 +119,14 @@ app.post('/identify', upload.single('image'), async (req, res) => {
         let string = results[0].scientificName;
         let firstWord = string.split(/\s+/)[0];
 
-        await detailsFinder(firstWord);
+        const plantData = await detailsFinder(firstWord);
+
+        res.status(status).json({ plantData });
 
     } catch (error) {
 
-        errorHandeler(error);
+        const errorType = errorHandeler(error);
+        res.send(errorType);
     }
 });
 
