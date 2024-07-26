@@ -82,7 +82,6 @@ app.post('/search', async (req, res) => {
     const plantData = {
 
         imgDetails: plantDetails.image.value,
-        // imgDetails: results,
         details: plantDetails,
 
     }
@@ -126,9 +125,9 @@ app.post('/identify', upload.single('image'), async (req, res) => {
         let string = results[0].scientificName;
         let firstWord = string.split(/\s+/)[0];
 
-        const plantData = await detailsFinder(firstWord);
+       const plantDetails = await detailsFinder(firstWord);
 
-        const plantDetails = {
+        const plantData = {
 
             imgDetails: results,
             details: plantDetails,
