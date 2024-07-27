@@ -33,7 +33,7 @@ function delay(minutes) {
 
 // Make Free Server Allways Active
 async function keepAlive() {
-    const speek = await axios.get(`http://localhost:5000`)
+    const speek = await axios.get(`https://findplant.onrender.com`)
     console.log(speek.data);
     await delay(14);
     keepAlive();
