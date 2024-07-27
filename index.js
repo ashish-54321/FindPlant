@@ -26,6 +26,19 @@ app.get("/", (req, res) => {
     res.send("Api's Now Live By Ashish Tiwari");
 });
 
+// Function to create a delay for a specified number of minutes
+function delay(minutes) {
+    return new Promise(resolve => setTimeout(resolve, minutes * 60 * 1000));
+}
+
+// Make Free Server Allways Active
+async function keepAlive() {
+    const speek = await axios.get(`http://localhost:5000`)
+    console.log(speek.data);
+    await delay(14);
+    keepAlive();
+}
+
 function errorHandeler(error) {
     // res.status(500).json({ error: 'Internal Server Error' });
     if (error.response) {
@@ -161,13 +174,10 @@ app.post('/identify', upload.single('image'), async (req, res) => {
         if (plantDetails.token) {
 
             const plantData = {
-
                 imgDetails: results,
                 details: plantDetails.data,
                 token: true,
-
             }
-
             res.status(status).json({ plantData });
 
         } else {
@@ -175,7 +185,6 @@ app.post('/identify', upload.single('image'), async (req, res) => {
             const plantData = {
                 token: false,
                 details: plantDetails.data,
-
             }
             res.status(status).json({ plantData });
 
@@ -229,7 +238,7 @@ app.post('/diagnosis', upload.single('image'), async (req, res) => {
 });
 
 
-
+keepAlive();//Alive Server use for Free Plan in Render
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
