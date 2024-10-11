@@ -1,6 +1,6 @@
 
-
 const express = require('express');
+const { MongoClient } = require('mongodb');
 const fs = require('fs');
 const axios = require('axios');
 const FormData = require('form-data');
@@ -13,6 +13,7 @@ const port = process.env.PORT || 5000;
 const apiKey = process.env.API_KEY;
 const apiKey1 = process.env.API_KEY1;
 const apiKey2 = process.env.API_KEY2;
+const uri = process.env.MONGO_URI;
 
 const storage = multer.memoryStorage(); // store files in memory
 const upload = multer({ storage: storage });
@@ -26,6 +27,41 @@ app.get("/", (req, res) => {
     res.send("Api's Now Live By Ashish Tiwari");
 });
 
+// Data Base Conncection
+
+// Function to search for a keyword in MongoDB
+async function searchKeyword(plantName) {
+    const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+    try {
+        // Connect to the MongoDB server
+        await client.connect();
+        console.log('Connected to MongoDB Atlas');
+
+        // Select the database and collection
+        const database = client.db('test'); // Replace with your actual database name
+        const collection = database.collection('plants'); // Replace with your actual collection name
+
+        // Use $regex to search for any plantName containing the letter "R" (case-insensitive)
+        const query = { plantName: { $regex: plantName, $options: 'i' } };
+        const results = await collection.find(query).toArray();
+
+        if (results.length > 0) {
+            return results;
+        } else {
+            console.log('No plants found containing the letter:', plantName);
+        }
+    } catch (err) {
+        console.error('Error occurred while searching:', err);
+    } finally {
+        // Close the connection to the MongoDB server
+        await client.close();
+    }
+}
+
+
+
+
 // Function to create a delay for a specified number of minutes
 function delay(minutes) {
     return new Promise(resolve => setTimeout(resolve, minutes * 60 * 1000));
@@ -34,6 +70,7 @@ function delay(minutes) {
 // Make Free Server Allways Active
 async function keepAlive() {
     const speek = await axios.get(`https://findplant.onrender.com`)
+    console.log(speek.data);
     await delay(14);
     keepAlive();
 }
@@ -234,6 +271,17 @@ app.post('/diagnosis', upload.single('image'), async (req, res) => {
             res.send({ Status: 'Plant Not Infected !' })
         });
 
+});
+
+
+// Sedule making API
+
+app.post('/schedule', async (req, res) => {
+
+    const plantName = req.body.plantName;
+    // console.log(plantName);
+    const result = await searchKeyword(plantName)
+    res.send({ result });
 });
 
 
