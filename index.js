@@ -68,7 +68,7 @@ function delay(minutes) {
 async function keepAlive() {
     const speek = await axios.get(`https://findplant.onrender.com`)
     console.log(speek.data);
-    await delay(14);
+    await delay(10);
     keepAlive();
 }
 
