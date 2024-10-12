@@ -1,4 +1,5 @@
 
+// Import Dependency
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const fs = require('fs');
@@ -7,42 +8,43 @@ const FormData = require('form-data');
 const multer = require('multer');
 const cors = require('cors');
 
-
-const app = express();
+// API Key
 const port = process.env.PORT || 5000;
 const apiKey = process.env.API_KEY;
 const apiKey1 = process.env.API_KEY1;
 const apiKey2 = process.env.API_KEY2;
 const uri = process.env.MONGO_URI;
 
-const storage = multer.memoryStorage(); // store files in memory
-const upload = multer({ storage: storage });
+// API Endpoint
+const endPoint = process.env.PLANT_NAME;
+const endPoint1 = process.env.IDENTIFY;
+const endPoint2 = process.env.DIAGNOSIS;
+const endPoint3 = process.env.PLANT_DETAILS;
 
-// Middleware to enable CORS
+
+// Middleware to enable CORS & Default Setting
+const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/", (req, res) => {
-    res.send("Api's Now Live By Ashish Tiwari");
-});
+// Storage Setting
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
-// Data Base Conncection
 
-// Function to search for a keyword in MongoDB
+// ________________________[ All Function ]_________________
 async function searchKeyword(plantName) {
-    const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+    const client = new MongoClient(uri);
 
     try {
         // Connect to the MongoDB server
         await client.connect();
-        console.log('Connected to MongoDB Atlas');
 
-        // Select the database and collection
-        const database = client.db('test'); // Replace with your actual database name
-        const collection = database.collection('plants'); // Replace with your actual collection name
+        const database = client.db('test');
+        const collection = database.collection('plants');
 
-        // Use $regex to search for any plantName containing the letter "R" (case-insensitive)
+
         const query = { plantName: { $regex: plantName, $options: 'i' } };
         const results = await collection.find(query).toArray();
 
@@ -54,20 +56,15 @@ async function searchKeyword(plantName) {
     } catch (err) {
         console.error('Error occurred while searching:', err);
     } finally {
-        // Close the connection to the MongoDB server
+
         await client.close();
     }
 }
 
-
-
-
-// Function to create a delay for a specified number of minutes
 function delay(minutes) {
     return new Promise(resolve => setTimeout(resolve, minutes * 60 * 1000));
 }
 
-// Make Free Server Allways Active
 async function keepAlive() {
     const speek = await axios.get(`https://findplant.onrender.com`)
     console.log(speek.data);
@@ -76,7 +73,6 @@ async function keepAlive() {
 }
 
 function errorHandeler(error) {
-    // res.status(500).json({ error: 'Internal Server Error' });
     if (error.response) {
         // The request was made, but the server responded with a status code other than 2xx
         if (error.response.status == 404) {
@@ -97,13 +93,10 @@ function errorHandeler(error) {
 
 }
 
-
 async function detailsFinder(firstWord) {
 
-
-
     // Find Accses Token By Plant Common Name 
-    const responseToken = await axios.get(`https://plant.id/api/v3/kb/plants/name_search?q=${firstWord}`, {
+    const responseToken = await axios.get(`${endPoint}${firstWord}`, {
         headers: {
             'Api-Key': apiKey1,
         }
@@ -118,8 +111,7 @@ async function detailsFinder(firstWord) {
     } else {
 
         // Find Plant Details By using Token
-
-        const responseDetails = await axios.get(`https://plant.id/api/v3/kb/plants/:${responseToken.data.entities[0].access_token}?details=common_names,url,description,taxonomy,rank,gbif_id,inaturalist_id,image,synonyms,edible_parts,watering,propagation_methods`, {
+        const responseDetails = await axios.get(`https://plant.id/api/v3/kb/plants/:${responseToken.data.entities[0].access_token}${endPoint3}`, {
             headers: {
                 'Api-Key': apiKey1,
             }
@@ -133,17 +125,19 @@ async function detailsFinder(firstWord) {
         return Check;
     }
 
-
-
 }
 
-app.post('/search', async (req, res) => {
+// _______________________[ All Endpoint & Api's ]__________________
 
+app.get("/", (req, res) => {
+    res.send("Api's Now Live By Ashish Tiwari");
+});
+
+app.post('/search', async (req, res) => {
 
     const plantDetails = await detailsFinder(req.body.name)
 
     if (plantDetails.token) {
-
         const plantData = {
 
             imgDetails: plantDetails.data.image.value,
@@ -151,25 +145,18 @@ app.post('/search', async (req, res) => {
             token: true,
 
         }
-
         res.status(200).json({ plantData });
 
     } else {
-
         const plantData = {
             token: false,
             details: plantDetails.data,
 
         }
         res.status(200).json({ plantData });
-
     }
 
-
 })
-
-
-
 
 app.post('/identify', upload.single('image'), async (req, res) => {
     const imageBuffer = req.file.buffer;
@@ -188,8 +175,7 @@ app.post('/identify', upload.single('image'), async (req, res) => {
             'Content-Type': `multipart/form-data; boundary=${form._boundary}`,
         };
 
-        const { status, data } = await axios.post(
-            'https://my-api.plantnet.org/v2/identify/all?include-related-images=true&no-reject=false&lang=en&type=kt&api-key=' + apiKey,
+        const { status, data } = await axios.post(endPoint1 + apiKey,
             form,
             { headers }
         );
@@ -226,17 +212,12 @@ app.post('/identify', upload.single('image'), async (req, res) => {
 
         }
 
-
     } catch (error) {
 
         const errorType = errorHandeler(error);
         res.send(errorType);
     }
 });
-
-
-
-// Diagnosis API 
 
 app.post('/diagnosis', upload.single('image'), async (req, res) => {
     const imageBuffer = req.file.buffer;
@@ -246,7 +227,7 @@ app.post('/diagnosis', upload.single('image'), async (req, res) => {
     const base64data = imageBuffer.toString('base64');
     axios({
         method: "POST",
-        url: "https://detect.roboflow.com/plant-disease-detection-v2-2nclk/1",
+        url: endPoint2,
         params: {
             api_key: apiKey2
         },
@@ -273,20 +254,15 @@ app.post('/diagnosis', upload.single('image'), async (req, res) => {
 
 });
 
-
-// Sedule making API
-
 app.post('/schedule', async (req, res) => {
-
     const plantName = req.body.plantName;
-    // console.log(plantName);
     const result = await searchKeyword(plantName)
     res.send({ result });
 });
 
-
-keepAlive();//Alive Server use for Free Plan in Render
-
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
+
+// End Of Backend Code...
+keepAlive();//Alive Server use for Free Plan in Render
