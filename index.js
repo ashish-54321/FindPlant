@@ -61,6 +61,66 @@ async function searchKeyword(plantName) {
     }
 }
 
+// infect Details
+async function infectKeyword(plantName) {
+    const client = new MongoClient(uri);
+
+    try {
+        // Connect to the MongoDB server
+        await client.connect();
+
+        const database = client.db('test');
+        const collection = database.collection('infect');
+
+
+        const query = { diseaseName: { $regex: plantName, $options: 'i' } };
+        const results = await collection.find(query).toArray();
+
+        if (results.length > 0) {
+            return results;
+        } else {
+            console.log('No plants found containing the letter:', plantName);
+        }
+    } catch (err) {
+        console.error('Error occurred while searching:', err);
+    } finally {
+
+        await client.close();
+    }
+}
+
+function delay(minutes) {
+    return new Promise(resolve => setTimeout(resolve, minutes * 60 * 1000));
+}
+
+async function keepAlive() {
+    const speek = await axios.get(`https://findplant.onrender.com`)
+    console.log(speek.data);
+    await delay(14);
+    keepAlive();
+}
+
+function errorHandeler(error) {
+    if (error.response) {
+        // The request was made, but the server responded with a status code other than 2xx
+        if (error.response.status == 404) {
+            return ({ Status: 'Not a Plant Image' })
+        }
+        else {
+            return ({ Status: 'Check Image Formate only Accept [jpg, jpeg and png] only.' })
+        }
+
+    } else if (error.request) {
+        // The request was made, but no response was received
+        return ({ Status: 'Check Internet Conection' })
+    } else {
+
+        return ({ Status: 'Something Went Wrong' })
+
+    }
+
+}
+
 function delay(minutes) {
     return new Promise(resolve => setTimeout(resolve, minutes * 60 * 1000));
 }
@@ -237,14 +297,20 @@ app.post('/diagnosis', upload.single('image'), async (req, res) => {
         },
         data: base64data
     })
-        .then(function (response) {
-            console.log(response.data);
+        .then(async function (response) {
+
+            const fullString = response.data.predictions[0].class;
+            const lastWord = fullString.trim().split(' ').pop();
+            const infectDeatails = await infectKeyword(lastWord)
             const results = {
                 name: response.data.predictions[0].class,
                 infect: response.data.predictions[0].confidence,
                 imageUrls: base64data,
+                details: infectDeatails,
             }
             res.send(results);
+
+
 
         })
         .catch(function (error) {
